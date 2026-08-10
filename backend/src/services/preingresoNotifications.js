@@ -192,6 +192,58 @@ async function enviarCorreoOrden(orden) {
   });
 }
 
+async function enviarCorreoOrdenListaEntrega(orden) {
+  const subject = `Equipo listo para entrega ${orden.numero_orden} - ${EMPRESA_NOMBRE}`;
+  const estadoTexto = orden.estado === 'no_reparable'
+    ? 'Tu equipo ya esta disponible para retiro y cierre de servicio.'
+    : 'Tu equipo ya esta listo para retiro.';
+  const text = [
+    `Hola ${orden.cliente_contacto_nombre || orden.cliente_nombre || ''},`,
+    '',
+    estadoTexto,
+    '',
+    datosEquipoOrden(orden),
+    '',
+    'Puedes retirarlo en:',
+    `${EMPRESA_DIRECCION}`,
+    `${EMPRESA_MAPA_URL}`,
+    '',
+    `Numero de orden: ${orden.numero_orden}`,
+    '',
+    `Contacto: ${EMPRESA_EMAIL}`
+  ].join('\n');
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#10263c;line-height:1.5">
+      <h2 style="margin:0 0 12px">${EMPRESA_NOMBRE}</h2>
+      <p>Hola ${escapeHtml(orden.cliente_contacto_nombre || orden.cliente_nombre || '')},</p>
+      <p>${escapeHtml(estadoTexto)}</p>
+      <p style="font-size:20px;font-weight:700;color:#1b93f4">${escapeHtml(orden.numero_orden)}</p>
+      <table style="border-collapse:collapse;width:100%;max-width:680px;margin:16px 0">
+        ${filaHtml('Empresa / cliente', orden.cliente_nombre)}
+        ${filaHtml('Contacto', orden.cliente_contacto_nombre)}
+        ${filaHtml('RUT', orden.cliente_rut)}
+        ${filaHtml('Correo', orden.cliente_email)}
+        ${filaHtml('Tipo de equipo', orden.tipo_equipo)}
+        ${filaHtml('Marca', orden.marca)}
+        ${filaHtml('Modelo', orden.modelo)}
+        ${filaHtml('Numero de serie', orden.numero_serie)}
+        ${filaHtml('Estado actual', orden.estado === 'no_reparable' ? 'No reparable - listo para retiro' : 'Reparado - listo para retiro')}
+      </table>
+      <p><strong>Direccion de retiro:</strong><br>${escapeHtml(EMPRESA_DIRECCION)}</p>
+      <p><a href="${escapeHtml(EMPRESA_MAPA_URL)}">Ver mapa para llegar</a></p>
+      <p>Contacto: <a href="mailto:${escapeHtml(EMPRESA_EMAIL)}">${escapeHtml(EMPRESA_EMAIL)}</a></p>
+    </div>
+  `;
+
+  return enviarCorreo({
+    to: orden.cliente_email,
+    subject,
+    text,
+    html
+  });
+}
+
 async function enviarTelegram(preingreso) {
   const config = obtenerConfigNotificaciones();
   if (!config.telegramBotToken || !config.telegramChatId) {
@@ -292,6 +344,19 @@ async function notificarIngresoCreado(orden) {
   });
 }
 
+async function notificarOrdenListaEntrega(orden) {
+  const asunto = `Equipo listo para entrega ${orden.numero_orden} - ${EMPRESA_NOMBRE}`;
+  return ejecutarNotificacion({
+    entidad_tipo: 'orden',
+    entidad_id: orden.id,
+    canal: 'email',
+    evento: 'orden_lista_entrega',
+    destinatario: orden.cliente_email,
+    asunto,
+    ejecutor: () => enviarCorreoOrdenListaEntrega(orden)
+  });
+}
+
 async function reenviarCorreoPreingreso(preingreso) {
   const asunto = `Preingreso recibido ${preingreso.codigo_servicio} - ${EMPRESA_NOMBRE}`;
   return ejecutarNotificacion({
@@ -306,15 +371,18 @@ async function reenviarCorreoPreingreso(preingreso) {
 }
 
 async function reenviarCorreoOrden(orden) {
-  const asunto = `Ingreso registrado ${orden.numero_orden} - ${EMPRESA_NOMBRE}`;
+  const listoEntrega = ['reparado', 'no_reparable'].includes(orden.estado);
+  const asunto = listoEntrega
+    ? `Equipo listo para entrega ${orden.numero_orden} - ${EMPRESA_NOMBRE}`
+    : `Ingreso registrado ${orden.numero_orden} - ${EMPRESA_NOMBRE}`;
   return ejecutarNotificacion({
     entidad_tipo: 'orden',
     entidad_id: orden.id,
     canal: 'email',
-    evento: 'orden_reenviada',
+    evento: listoEntrega ? 'orden_lista_entrega_reenviada' : 'orden_reenviada',
     destinatario: orden.cliente_email,
     asunto,
-    ejecutor: () => enviarCorreoOrden(orden)
+    ejecutor: () => (listoEntrega ? enviarCorreoOrdenListaEntrega(orden) : enviarCorreoOrden(orden))
   });
 }
 
@@ -339,6 +407,7 @@ function escapeHtml(valor) {
 module.exports = {
   notificarPreingresoEnviado,
   notificarIngresoCreado,
+  notificarOrdenListaEntrega,
   reenviarCorreoPreingreso,
   reenviarCorreoOrden
 };

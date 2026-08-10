@@ -2,7 +2,7 @@ const Orden = require('../models/Orden');
 const Cliente = require('../models/Cliente');
 const Preingreso = require('../models/Preingreso');
 const Usuario = require('../models/Usuario');
-const { notificarIngresoCreado, reenviarCorreoOrden } = require('../services/preingresoNotifications');
+const { notificarIngresoCreado, notificarOrdenListaEntrega, reenviarCorreoOrden } = require('../services/preingresoNotifications');
 const { generarComprobanteIngreso, generarComprobanteEntrega } = require('../utils/pdfGenerator');
 const { cifrarTexto } = require('../utils/secretField');
 const path = require('path');
@@ -231,7 +231,8 @@ const ordenesController = {
     }
   },
 
-  actualizarEstado(req, res) {
+  async actualizarEstado(req, res, next) {
+    try {
     const { estado, comentario } = req.body;
     const ESTADOS_VALIDOS = ['ingresado', 'en_diagnostico', 'en_reparacion', 'esperando_aprobacion', 'reparado', 'no_reparable', 'entregado', 'cancelado'];
 
@@ -243,7 +244,13 @@ const ordenesController = {
     if (!orden) return res.status(404).json({ error: 'Orden no encontrada.' });
 
     const actualizada = Orden.actualizarEstado(req.params.id, estado, req.usuario.id, comentario);
+    if (['reparado', 'no_reparable'].includes(estado) && orden.estado !== estado) {
+      await notificarOrdenListaEntrega(actualizada);
+    }
     res.json(actualizada);
+    } catch (err) {
+      next(err);
+    }
   },
 
   actualizarDiagnostico(req, res) {
