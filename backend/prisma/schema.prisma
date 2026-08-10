@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TECHNICIAN
+}
+
+enum Recurrence {
+  NONE
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+enum VisitStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  name               String
+  email              String              @unique
+  passwordHash       String
+  role               Role
+  phone              String?
+  zone               String?
+  specialty          String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  assignedVisits     Visit[]             @relation("TechnicianVisits")
+  outlookConnections OutlookConnection[]
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  contact   String
+  email     String
+  phone     String
+  address   String
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  visits    Visit[]
+}
+
+model Visit {
+  id                    String      @id @default(cuid())
+  title                 String
+  notes                 String?
+  ticketNumber          String?
+  equipmentDiagnosis    String?
+  equipmentStatus       String?
+  startDateTime         DateTime
+  durationMinutes       Int         @default(90)
+  recurrence            Recurrence  @default(NONE)
+  status                VisitStatus @default(SCHEDULED)
+  clientId              String
+  technicianId          String
+  externalSource        String?
+  externalEventId       String?     @unique
+  externalCalendarOwner String?
+  externalICalUId       String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  client                Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  technician            User        @relation("TechnicianVisits", fields: [technicianId], references: [id], onDelete: Restrict)
+
+  @@index([technicianId, startDateTime])
+}
+
+model OutlookConnection {
+  id               String   @id @default(cuid())
+  provider         String   @default("MICROSOFT")
+  tenantId         String
+  accountEmail     String
+  accountName      String?
+  accessToken      String
+  refreshToken     String
+  expiresAt        DateTime
+  scope            String?
+  lastSyncAt       DateTime?
+  connectedByUserId String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  connectedByUser  User     @relation(fields: [connectedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, accountEmail])
+}

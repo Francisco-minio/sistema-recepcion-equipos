@@ -1,0 +1,17 @@
+{
+  "name": "servicehub-ti",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace backend & npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend && npm run build --workspace backend",
+    "db:generate": "npm run db:generate --workspace backend",
+    "db:push": "npm run db:push --workspace backend",
+    "db:init": "sqlite3 backend/prisma/dev.db < backend/prisma/init.sql",
+    "db:seed": "npm run db:seed --workspace backend"
+  }
+}

@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+  backend:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    restart: unless-stopped
+    environment:
+      MS_TENANT_ID: ${MS_TENANT_ID:-common}
+      MS_CLIENT_ID: ${MS_CLIENT_ID:-}
+      MS_CLIENT_SECRET: ${MS_CLIENT_SECRET:-}
+      MS_REDIRECT_URI: ${MS_REDIRECT_URI:-http://localhost:8080/api/integrations/microsoft/callback}
+      MS_SCOPES: ${MS_SCOPES:-offline_access openid profile email Calendars.Read Calendars.Read.Shared User.Read}
+    volumes:
+      - servicehub_data:/app/data
+
+volumes:
+  servicehub_data:

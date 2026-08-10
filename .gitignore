@@ -1,0 +1,8 @@
+.env
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+backend/prisma/*.db
+backend/prisma/*.db-journal
+frontend/dist
+backend/dist
