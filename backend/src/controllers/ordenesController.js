@@ -231,6 +231,21 @@ const ordenesController = {
     }
   },
 
+  eliminar(req, res) {
+    const orden = Orden.buscarPorId(req.params.id);
+    if (!orden) return res.status(404).json({ error: 'Orden no encontrada.' });
+
+    Orden.eliminar(req.params.id);
+    res.json({
+      ok: true,
+      mensaje: `Orden ${orden.numero_orden} eliminada correctamente.`,
+      orden: {
+        id: orden.id,
+        numero_orden: orden.numero_orden
+      }
+    });
+  },
+
   async actualizarEstado(req, res, next) {
     try {
     const { estado, comentario } = req.body;

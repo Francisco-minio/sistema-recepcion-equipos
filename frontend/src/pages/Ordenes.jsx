@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Tarjeta, BadgeEstado, Spinner, Input, Select, VacioEstado, Boton } from '../components/ui';
 import { enviarWhatsAppCliente } from '../utils/whatsapp';
+import { useAuth } from '../context/AuthContext';
 import './Ordenes.css';
 
 const STORAGE_KEY = 'ordenes_filtros';
@@ -21,6 +22,7 @@ const ESTADOS = [
 
 export default function Ordenes() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
   const [ordenes, setOrdenes] = useState([]);
   const [tecnicos, setTecnicos] = useState([]);
   const [total, setTotal] = useState(0);
@@ -58,6 +60,19 @@ export default function Ordenes() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ busqueda, estado, tecnicoId }));
   }, [busqueda, estado, tecnicoId]);
+
+  const eliminarOrden = async (orden) => {
+    const confirmar = window.confirm(`Se eliminara la orden ${orden.numero_orden} y sus fotos, historial y notificaciones asociadas. Esta accion no se puede deshacer.`);
+    if (!confirmar) return;
+
+    try {
+      await api.delete(`/ordenes/${orden.id}`);
+      setOrdenes((prev) => prev.filter((item) => item.id !== orden.id));
+      setTotal((prev) => Math.max(0, prev - 1));
+    } catch (error) {
+      window.alert(error.response?.data?.error || 'No se pudo eliminar la orden.');
+    }
+  };
 
   return (
     <div>
@@ -176,6 +191,17 @@ export default function Ordenes() {
                       >
                         💬 WhatsApp
                       </Boton>
+                      {usuario?.rol === 'admin' && (
+                        <Boton
+                          variante="secundario"
+                          tamaño="pequeño"
+                          title="Eliminar orden"
+                          style={{ borderColor: '#dc2626', color: '#dc2626' }}
+                          onClick={() => eliminarOrden(o)}
+                        >
+                          Eliminar
+                        </Boton>
+                      )}
                     </div>
                   </td>
                 </tr>

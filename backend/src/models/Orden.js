@@ -324,6 +324,31 @@ const Orden = {
     return db.prepare('DELETE FROM orden_fotos WHERE id = ?').run(foto_id);
   },
 
+  eliminar(id) {
+    const orden = this.buscarPorId(id);
+    if (!orden) return null;
+
+    const transaction = db.transaction(() => {
+      for (const foto of orden.fotos || []) {
+        if (foto.ruta_archivo) {
+          const rutaArchivo = path.join(__dirname, '..', '..', 'uploads', foto.ruta_archivo);
+          if (fs.existsSync(rutaArchivo)) {
+            fs.unlinkSync(rutaArchivo);
+          }
+        }
+      }
+
+      db.prepare('DELETE FROM notificacion_logs WHERE entidad_tipo = ? AND entidad_id = ?').run('orden', id);
+      db.prepare('UPDATE preingresos SET orden_id = NULL WHERE orden_id = ?').run(id);
+      db.prepare('DELETE FROM orden_historial WHERE orden_id = ?').run(id);
+      db.prepare('DELETE FROM orden_fotos WHERE orden_id = ?').run(id);
+      db.prepare('DELETE FROM ordenes WHERE id = ?').run(id);
+    });
+
+    transaction();
+    return orden;
+  },
+
   estadisticas() {
     const porEstado = db.prepare(`
       SELECT estado, COUNT(*) as total FROM ordenes GROUP BY estado

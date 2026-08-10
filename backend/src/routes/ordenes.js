@@ -12,6 +12,7 @@ router.get('/numero/:numero', ordenesController.obtenerPorNumero);
 router.get('/', ordenesController.listar);
 router.post('/', requiereRol('admin', 'recepcion', 'tecnico'), upload.array('fotos_ingreso', 3), ordenesController.crearIngreso);
 router.get('/:id', ordenesController.obtener);
+router.delete('/:id', requiereRol('admin'), ordenesController.eliminar);
 router.post('/:id/reenviar-correo', requiereRol('admin', 'recepcion', 'tecnico'), ordenesController.reenviarCorreo);
 
 router.patch('/:id/estado', requiereRol('admin', 'recepcion', 'tecnico'), ordenesController.actualizarEstado);
