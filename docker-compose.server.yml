@@ -1,11 +1,11 @@
 services:
   backend:
     image: ${BACKEND_IMAGE:-sistema-soporte-backend:latest}
+    ports: []
 
   frontend:
     image: ${FRONTEND_IMAGE:-sistema-soporte-frontend:latest}
-    ports:
-      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"
+    ports: []
 
   cloudflared:
     image: cloudflare/cloudflared:latest
