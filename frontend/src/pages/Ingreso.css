@@ -1,0 +1,192 @@
+.ingreso-header { margin-bottom: 20px; }
+.ingreso-titulo { font-size: 22px; margin: 0 0 4px; }
+.ingreso-sub { color: var(--color-ink-soft); margin: 0; font-size: 14px; }
+.ingreso-codigo-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.pasos-indicador {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.paso-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  flex: 1;
+}
+.paso-numero {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  background: var(--color-line-soft);
+  color: var(--color-ink-soft);
+  flex-shrink: 0;
+}
+.paso-texto { font-size: 13px; font-weight: 600; color: var(--color-ink-soft); }
+.paso-activo { border-color: var(--color-accent); }
+.paso-activo .paso-numero { background: var(--color-accent); color: white; }
+.paso-activo .paso-texto { color: var(--color-ink); }
+.paso-completo .paso-numero { background: var(--color-ok); color: white; }
+.paso-completo .paso-texto { color: var(--color-ink); }
+
+.ingreso-seccion-titulo { margin: 0 0 16px; font-size: 16px; }
+.ingreso-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.ingreso-nota { font-size: 12.5px; color: var(--color-ink-soft); margin: 4px 0 16px; }
+.ingreso-autocomplete { position: relative; }
+.ingreso-autocomplete-estado {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-ink-soft);
+}
+.ingreso-autocomplete-lista {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 16px 32px rgba(17, 24, 39, 0.12);
+}
+.ingreso-autocomplete-item {
+  width: 100%;
+  border: none;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+.ingreso-autocomplete-item:hover,
+.ingreso-autocomplete-item.activo { background: var(--color-accent-soft); }
+.ingreso-autocomplete-item strong { font-size: 13px; color: var(--color-ink); }
+.ingreso-autocomplete-item span,
+.ingreso-autocomplete-item small { color: var(--color-ink-soft); }
+
+.ingreso-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ingreso-fotos-acciones {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ingreso-foto-campo {
+  flex: 1 1 220px;
+  border: 1px dashed var(--color-line);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--color-surface);
+}
+.ingreso-foto-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+.ingreso-foto-campo input[type="file"] {
+  width: 100%;
+}
+.btn-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+.ingreso-fotos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+.ingreso-foto-item {
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.ingreso-foto-preview {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+  background: var(--color-line-soft);
+}
+.ingreso-foto-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px;
+  font-size: 12px;
+}
+.ingreso-foto-meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chip {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  padding: 7px 14px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--color-ink-soft);
+  transition: all 0.12s ease;
+}
+.chip:hover { border-color: var(--color-accent); }
+.chip-activo { background: var(--color-accent); border-color: var(--color-accent); color: white; font-weight: 600; }
+
+.ingreso-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.ingreso-confirmacion {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--color-surface);
+  border-radius: 8px;
+  border: 1px solid var(--color-line);
+}
+.ingreso-confirmacion-icono {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700;
+  margin: 0 auto 18px;
+}
+.ingreso-confirmacion h2 { margin: 0 0 8px; }
+.ingreso-confirmacion-numero { font-size: 18px; font-weight: 700; color: var(--color-accent); margin: 0 0 14px; }
+.ingreso-confirmacion-acciones {
+  display: flex; flex-direction: column; gap: 10px;
+  max-width: 320px; margin: 24px auto 0;
+}
+
+@media (max-width: 700px) {
+  .ingreso-grid-2 { grid-template-columns: 1fr; }
+  .ingreso-codigo-grid { grid-template-columns: 1fr; }
+  .pasos-indicador { flex-direction: column; }
+  .ingreso-fotos-acciones { flex-direction: column; }
+}

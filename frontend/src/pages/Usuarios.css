@@ -1,0 +1,38 @@
+.usuarios-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.usuarios-titulo { font-size: 22px; margin: 0 0 4px; }
+.usuarios-sub { color: var(--color-ink-soft); margin: 0; font-size: 14px; }
+
+.usuarios-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+.tabla-usuarios { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.tabla-usuarios thead th {
+  text-align: left; padding: 12px 18px; font-size: 11.5px;
+  text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--color-ink-soft); border-bottom: 1px solid var(--color-line);
+  background: var(--color-line-soft);
+}
+.tabla-usuarios tbody td { padding: 12px 18px; border-bottom: 1px solid var(--color-line-soft); }
+.tabla-usuarios-acciones { display: flex; gap: 14px; }
+
+.link-accion {
+  background: none; border: none; padding: 0;
+  color: var(--color-accent); font-size: 12.5px; font-weight: 600;
+  cursor: pointer;
+}
+.link-accion:hover { text-decoration: underline; }
+
+.reset-password-fila { display: flex; gap: 10px; max-width: 380px; align-items: flex-end; }
+.reset-password-fila .input { margin: 0; }
+
+@media (max-width: 700px) {
+  .usuarios-form-grid { grid-template-columns: 1fr; }
+}

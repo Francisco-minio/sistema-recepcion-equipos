@@ -1,0 +1,389 @@
+.consulta-publica-container {
+  min-height: 100vh;
+  background-color: #f1f5f9;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: #1e293b;
+  display: flex;
+  flex-direction: column;
+}
+
+.consulta-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  color: #ffffff;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.consulta-brand {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.brand-badge {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.consulta-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  color: #ffffff;
+}
+
+.consulta-header p {
+  color: #93c5fd;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.consulta-body {
+  flex: 1;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+}
+
+.consulta-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+.search-card h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  color: #0f172a;
+}
+
+.consulta-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+@media (max-width: 640px) {
+  .consulta-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.4rem;
+}
+
+.form-group input {
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.btn-consultar {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-consultar:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-consultar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.consulta-error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #991b1b;
+  margin-bottom: 1.5rem;
+}
+
+.consulta-error p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.orden-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.orden-numero {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: block;
+}
+
+.orden-cliente {
+  margin: 0.25rem 0 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.estado-pill {
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
+}
+
+/* Progreso visual */
+.progreso-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 2rem 0;
+  padding: 0 0.5rem;
+}
+
+.paso-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.4;
+  transition: all 0.3s ease;
+}
+
+.paso-item.activo {
+  opacity: 1;
+}
+
+.paso-icono {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #f1f5f9;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.paso-item.activo .paso-icono {
+  background-color: #eff6ff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.paso-item span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  text-align: center;
+}
+
+.paso-linea {
+  flex: 1;
+  height: 3px;
+  background-color: #e2e8f0;
+  margin: 0 0.5rem;
+  transform: translateY(-12px);
+}
+
+.paso-linea.activa {
+  background-color: #2563eb;
+}
+
+.estado-descripcion-box {
+  background-color: #f8fafc;
+  border-left: 4px solid #2563eb;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  margin-bottom: 1.75rem;
+}
+
+.estado-descripcion-box p {
+  margin: 0;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.detalles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .detalles-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detalle-box {
+  background-color: #f8fafc;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.detalle-box h3, .diagnostico-box h3, .fotos-box h3, .contacto-sucursal-box h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.85rem;
+  color: #1e293b;
+}
+
+.detalle-box p {
+  margin: 0.35rem 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.text-capitalize {
+  text-transform: capitalize;
+}
+
+.accesorios-list {
+  margin: 0.5rem 0 0 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.accesorios-list li {
+  font-size: 0.85rem;
+  color: #166534;
+  font-weight: 600;
+  background-color: #f0fdf4;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  display: inline-block;
+  margin: 0.2rem 0.2rem 0.2rem 0;
+}
+
+.diagnostico-box {
+  background-color: #fefce8;
+  border: 1px solid #fef08a;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.diagnostico-texto {
+  margin: 0 0 1rem 0;
+  color: #854d0e;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+}
+
+.presupuesto-tag {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  background-color: #fef9c3;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: #713f12;
+  font-size: 0.95rem;
+}
+
+.fotos-box {
+  margin-bottom: 1.5rem;
+}
+
+.public-fotos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.foto-item {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.foto-item img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.foto-tipo {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem;
+  color: #64748b;
+  text-transform: capitalize;
+}
+
+.contacto-sucursal-box {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.contacto-sucursal-box p {
+  margin: 0.4rem 0;
+  font-size: 0.9rem;
+  color: #1e40af;
+}
+
+.consulta-footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  border-top: 1px solid #e2e8f0;
+  background-color: #ffffff;
+}

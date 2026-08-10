@@ -1,0 +1,69 @@
+.ordenes-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.ordenes-titulo { font-size: 22px; margin: 0 0 4px; }
+.ordenes-sub { color: var(--color-ink-soft); margin: 0; font-size: 14px; }
+
+.ordenes-filtros {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px 220px;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tabla-ordenes {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.tabla-ordenes thead th {
+  text-align: left;
+  padding: 12px 18px;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-ink-soft);
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-line-soft);
+}
+.tabla-ordenes tbody td {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--color-line-soft);
+  vertical-align: middle;
+}
+.tabla-ordenes tbody tr { cursor: pointer; }
+.tabla-ordenes tbody tr:hover { background: var(--color-accent-soft); }
+.tabla-ordenes tbody tr:last-child td { border-bottom: none; }
+
+.celda-cliente-nombre { font-weight: 600; }
+.celda-cliente-rut { font-size: 12px; color: var(--color-ink-soft); }
+.celda-falla {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-ink-soft);
+}
+.celda-tecnico {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.1);
+  color: #166534;
+  font-size: 12px;
+  font-weight: 600;
+}
+.celda-tecnico.sin-asignar {
+  background: var(--color-line-soft);
+  color: var(--color-ink-soft);
+}
+.celda-fecha { color: var(--color-ink-soft); font-size: 12.5px; }
+
+@media (max-width: 800px) {
+  .ordenes-filtros { grid-template-columns: 1fr; }
+}

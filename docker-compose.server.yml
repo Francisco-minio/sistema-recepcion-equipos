@@ -1,0 +1,20 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE:-sistema-soporte-backend:latest}
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-4000}:4000"
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-sistema-soporte-frontend:latest}
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: sistema-soporte-cloudflared
+    depends_on:
+      - frontend
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    command: tunnel --no-autoupdate run
+    restart: unless-stopped

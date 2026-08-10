@@ -1,0 +1,47 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: sistema-soporte-backend
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DB_PATH: /app/database/soporte.db
+      FRONTEND_URL: ${FRONTEND_URL:-*}
+      JWT_SECRET: ${JWT_SECRET:-cambia_esto_por_un_secreto_largo_y_aleatorio}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
+      EMPRESA_NOMBRE: ${EMPRESA_NOMBRE:-Backupcode SPA}
+      EMPRESA_RUT: ${EMPRESA_RUT:-76.123.456-7}
+      EMPRESA_DIRECCION: ${EMPRESA_DIRECCION:-Icalma 1030, Puerto Montt}
+      EMPRESA_TELEFONO: ${EMPRESA_TELEFONO:-}
+      EMPRESA_EMAIL: ${EMPRESA_EMAIL:-soporte@backupcode.cl}
+      EMPRESA_MAPA_URL: ${EMPRESA_MAPA_URL:-https://maps.app.goo.gl/dGcwpXHw6qUxB6Jr6}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-soporte@backupcode.cl}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    volumes:
+      - backend_data:/app/database
+      - backend_uploads:/app/uploads
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: sistema-soporte-frontend
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    restart: unless-stopped
+
+volumes:
+  backend_data:
+  backend_uploads:

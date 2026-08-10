@@ -1,0 +1,99 @@
+.configuracion-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.configuracion-header h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+}
+
+.configuracion-header p {
+  margin: 0;
+  color: var(--color-ink-soft);
+  max-width: 760px;
+}
+
+.configuracion-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.configuracion-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.configuracion-card h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.configuracion-card p,
+.configuracion-notas p {
+  margin: 0;
+  color: var(--color-ink-soft);
+  line-height: 1.55;
+}
+
+.configuracion-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-weight: 700;
+  width: fit-content;
+}
+
+.configuracion-notas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.configuracion-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.configuracion-bloque h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.configuracion-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.configuracion-switch {
+  margin: 2px 0 6px;
+}
+
+.configuracion-switch label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-ink-soft);
+  font-size: 14px;
+}
+
+@media (max-width: 860px) {
+  .configuracion-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .configuracion-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

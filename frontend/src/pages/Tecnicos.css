@@ -1,0 +1,70 @@
+.tecnicos-pagina { display: flex; flex-direction: column; gap: 16px; }
+.tecnicos-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.tecnicos-titulo { margin: 0 0 4px; font-size: 22px; }
+.tecnicos-sub { margin: 0; color: var(--color-ink-soft); font-size: 14px; }
+
+.tecnicos-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tecnicos-metrica {
+  background: linear-gradient(135deg, #0d334d, #1b608c);
+  color: white;
+  padding: 18px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tecnicos-metrica strong { font-size: 28px; }
+.tecnicos-metrica span { color: rgba(255,255,255,.82); font-size: 13px; }
+
+.tecnicos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.tecnico-card-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 14px; }
+.tecnico-card-head h3 { margin: 0 0 4px; }
+.tecnico-card-head p { margin: 0; color: var(--color-ink-soft); font-size: 12.5px; }
+
+.tecnico-card-metricas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.tecnico-dato-mini {
+  background: var(--color-line-soft);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tecnico-dato-mini span { font-size: 12px; color: var(--color-ink-soft); }
+.tecnico-dato-mini strong { font-size: 20px; color: var(--color-ink); }
+
+.tecnico-card-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.tecnico-card-meta { font-size: 12px; color: var(--color-ink-soft); text-transform: capitalize; }
+
+.tecnico-acciones { display: flex; flex-direction: column; gap: 12px; }
+.tecnico-reset { display: flex; gap: 8px; align-items: flex-end; }
+.tecnico-reset .input { margin: 0; }
+
+.tecnico-form { display: flex; flex-direction: column; gap: 14px; }
+.tecnico-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+@media (max-width: 860px) {
+  .tecnicos-resumen { grid-template-columns: 1fr; }
+  .tecnico-form-grid { grid-template-columns: 1fr; }
+}

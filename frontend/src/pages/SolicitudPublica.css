@@ -1,0 +1,93 @@
+.solicitud-publica-wrap {
+  min-height: 100vh;
+  padding: 28px 18px;
+  background:
+    radial-gradient(circle at top left, rgba(43, 144, 255, 0.14), transparent 30%),
+    linear-gradient(180deg, #0d1b2a 0%, #10263c 100%);
+}
+
+.solicitud-publica-card {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.solicitud-publica-header {
+  color: white;
+}
+
+.solicitud-publica-brand {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.solicitud-publica-logo {
+  width: 100%;
+  max-width: 220px;
+  display: block;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.solicitud-publica-header h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.solicitud-publica-header p {
+  margin: 0 0 6px;
+  color: rgba(255,255,255,0.85);
+}
+
+.solicitud-publica-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.solicitud-publica-info p {
+  margin: 6px 0 0;
+  color: var(--color-ink-soft);
+}
+
+.solicitud-publica-mapa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-weight: 700;
+}
+
+.solicitud-publica-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (max-width: 720px) {
+  .solicitud-publica-brand {
+    grid-template-columns: 1fr;
+  }
+
+  .solicitud-publica-logo {
+    max-width: 180px;
+  }
+
+  .solicitud-publica-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .solicitud-publica-mapa {
+    width: 100%;
+  }
+}

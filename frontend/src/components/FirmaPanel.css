@@ -1,0 +1,67 @@
+.firma-panel {
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.firma-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--color-line-soft);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.firma-panel-etiqueta {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+}
+
+.firma-panel-limpiar {
+  background: none;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-accent);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.firma-panel-limpiar:hover { text-decoration: underline; }
+
+.firma-panel-lienzo {
+  position: relative;
+  height: 180px;
+  /* Textura sutil tipo papel de copia / libreta de recibos */
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 29px, var(--color-line-soft) 29px, var(--color-line-soft) 30px);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.firma-panel-lienzo canvas {
+  display: block;
+  touch-action: none;
+}
+
+.firma-panel-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #b7b4ab;
+  font-size: 13px;
+  font-style: italic;
+  pointer-events: none;
+}
+
+.firma-panel-linea {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 28px;
+  border-bottom: 1.5px dashed #c7c4ba;
+  pointer-events: none;
+}
