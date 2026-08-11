@@ -8,6 +8,12 @@ function validarBasico(body) {
   if (!body.cliente_rut || !body.cliente_rut.trim()) {
     return 'El RUT es obligatorio.';
   }
+  if (!body.cliente_telefono || !body.cliente_telefono.trim()) {
+    return 'El telefono es obligatorio para contactarte sobre tu servicio.';
+  }
+  if (!body.cliente_email || !body.cliente_email.trim()) {
+    return 'El correo electronico es obligatorio para enviarte informacion del servicio.';
+  }
   if (!body.falla_reportada || !body.falla_reportada.trim()) {
     return 'Debes indicar por que dejaras el equipo en servicio tecnico.';
   }

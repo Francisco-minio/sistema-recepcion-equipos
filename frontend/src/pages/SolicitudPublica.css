@@ -73,6 +73,16 @@
   gap: 14px;
 }
 
+.solicitud-publica-aviso-contacto {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(27, 147, 244, 0.10);
+  border: 1px solid rgba(27, 147, 244, 0.18);
+  color: var(--color-ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 @media (max-width: 720px) {
   .solicitud-publica-brand {
     grid-template-columns: 1fr;

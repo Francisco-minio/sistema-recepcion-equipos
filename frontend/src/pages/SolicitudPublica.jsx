@@ -131,6 +131,9 @@ export default function SolicitudPublica() {
 
         <Tarjeta>
           <form onSubmit={enviar} className="solicitud-publica-form">
+            <div className="solicitud-publica-aviso-contacto">
+              Usaremos tu telefono y correo para contactarte y enviarte informacion relacionada con el estado de tu servicio.
+            </div>
             <div className="ingreso-grid-2">
               <Campo etiqueta="Nombre de quien entrega" requerido>
                 <Input value={form.cliente_nombre} onChange={(e) => actualizar('cliente_nombre', e.target.value)} required />
@@ -138,11 +141,22 @@ export default function SolicitudPublica() {
               <Campo etiqueta="RUT" requerido>
                 <Input value={form.cliente_rut} onChange={(e) => actualizar('cliente_rut', e.target.value)} required />
               </Campo>
-              <Campo etiqueta="Telefono">
-                <Input value={form.cliente_telefono} onChange={(e) => actualizar('cliente_telefono', e.target.value)} />
+              <Campo etiqueta="Telefono" requerido>
+                <Input
+                  value={form.cliente_telefono}
+                  onChange={(e) => actualizar('cliente_telefono', e.target.value)}
+                  required
+                  placeholder="Ej: +56 9 1234 5678"
+                />
               </Campo>
-              <Campo etiqueta="Correo">
-                <Input type="email" value={form.cliente_email} onChange={(e) => actualizar('cliente_email', e.target.value)} />
+              <Campo etiqueta="Correo" requerido>
+                <Input
+                  type="email"
+                  value={form.cliente_email}
+                  onChange={(e) => actualizar('cliente_email', e.target.value)}
+                  required
+                  placeholder="Ej: nombre@correo.cl"
+                />
               </Campo>
               <Campo etiqueta="Tipo de equipo">
                 <Select value={form.tipo_equipo} onChange={(e) => actualizar('tipo_equipo', e.target.value)}>
