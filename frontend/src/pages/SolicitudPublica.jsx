@@ -34,6 +34,7 @@ export default function SolicitudPublica() {
   const [enviado, setEnviado] = useState(false);
   const [preingreso, setPreingreso] = useState(null);
   const [form, setForm] = useState({
+    empresa_nombre: '',
     cliente_nombre: '',
     cliente_rut: '',
     cliente_telefono: '',
@@ -52,6 +53,7 @@ export default function SolicitudPublica() {
       .then(({ data }) => {
         setPreingreso(data);
         setForm({
+          empresa_nombre: data.empresa_nombre || '',
           cliente_nombre: data.cliente_nombre || '',
           cliente_rut: data.cliente_rut || '',
           cliente_telefono: data.cliente_telefono || '',
@@ -135,6 +137,13 @@ export default function SolicitudPublica() {
               Usaremos tu telefono y correo para contactarte y enviarte informacion relacionada con el estado de tu servicio.
             </div>
             <div className="ingreso-grid-2">
+              <Campo etiqueta="Empresa">
+                <Input
+                  value={form.empresa_nombre}
+                  onChange={(e) => actualizar('empresa_nombre', e.target.value)}
+                  placeholder="Ej: Backupcode SPA"
+                />
+              </Campo>
               <Campo etiqueta="Nombre de quien entrega" requerido>
                 <Input value={form.cliente_nombre} onChange={(e) => actualizar('cliente_nombre', e.target.value)} required />
               </Campo>

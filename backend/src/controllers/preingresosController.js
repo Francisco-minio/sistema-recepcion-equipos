@@ -1,4 +1,5 @@
 const Preingreso = require('../models/Preingreso');
+const Cliente = require('../models/Cliente');
 const { notificarPreingresoEnviado, reenviarCorreoPreingreso } = require('../services/preingresoNotifications');
 
 function validarBasico(body) {
@@ -18,6 +19,28 @@ function validarBasico(body) {
     return 'Debes indicar por que dejaras el equipo en servicio tecnico.';
   }
   return null;
+}
+
+function resolverEmpresaPreingreso(body = {}) {
+  const empresa_id = body.empresa_id ? Number(body.empresa_id) : null;
+  const empresa_nombre = body.empresa_nombre ? String(body.empresa_nombre).trim() : null;
+
+  if (empresa_id) {
+    const empresa = Cliente.buscarPorId(empresa_id);
+    if (empresa) {
+      return { empresa_id: empresa.id, empresa_nombre: empresa.nombre };
+    }
+  }
+
+  const porNombre = empresa_nombre ? Cliente.buscarEmpresaPorNombreExacto(empresa_nombre) : null;
+  if (porNombre) {
+    return { empresa_id: porNombre.id, empresa_nombre: porNombre.nombre };
+  }
+
+  return {
+    empresa_id: null,
+    empresa_nombre
+  };
 }
 
 const preingresosController = {
@@ -61,7 +84,11 @@ const preingresosController = {
       const error = validarBasico(req.body || {});
       if (error) return res.status(400).json({ error });
 
-      const actualizado = Preingreso.actualizarDesdeCliente(preingreso.id, req.body);
+      const empresa = resolverEmpresaPreingreso(req.body || {});
+      const actualizado = Preingreso.actualizarDesdeCliente(preingreso.id, {
+        ...req.body,
+        ...empresa
+      });
       await notificarPreingresoEnviado(actualizado);
       res.json(actualizado);
     } catch (err) {

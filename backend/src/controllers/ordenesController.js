@@ -167,7 +167,12 @@ const ordenesController = {
         }
       }
 
-      const clienteRegistrado = Cliente.obtenerOCrear(cliente);
+      const puedePersistirCorreoEmpresa = req.usuario?.rol === 'tecnico';
+      const clienteParaPersistencia = (cliente?.tipo_cliente || 'empresa') === 'empresa' && !puedePersistirCorreoEmpresa
+        ? { ...cliente, email: null, correos: [] }
+        : cliente;
+
+      const clienteRegistrado = Cliente.obtenerOCrear(clienteParaPersistencia);
       const claveCifrada = clave_acceso ? cifrarTexto(clave_acceso) : null;
       const esParticular = (cliente?.tipo_cliente || 'empresa') === 'particular';
 

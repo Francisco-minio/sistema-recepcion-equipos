@@ -56,9 +56,15 @@ const Preingreso = {
     const codigo_servicio = generarCodigoServicio();
     const token_acceso = uuidv4();
     const info = db.prepare(`
-      INSERT INTO preingresos (codigo_servicio, token_acceso, creado_por_usuario_id)
-      VALUES (?, ?, ?)
-    `).run(codigo_servicio, token_acceso, creado_por_usuario_id);
+      INSERT INTO preingresos (codigo_servicio, token_acceso, creado_por_usuario_id, empresa_id, empresa_nombre)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(
+      codigo_servicio,
+      token_acceso,
+      creado_por_usuario_id,
+      null,
+      null
+    );
     return this.buscarPorId(info.lastInsertRowid);
   },
 
@@ -105,6 +111,8 @@ const Preingreso = {
     db.prepare(`
       UPDATE preingresos SET
         token_acceso = 'usado-' || id || '-' || strftime('%s', 'now'),
+        empresa_id = ?,
+        empresa_nombre = ?,
         cliente_nombre = ?,
         cliente_rut = ?,
         cliente_telefono = ?,
@@ -120,6 +128,8 @@ const Preingreso = {
         actualizado_en = datetime('now')
       WHERE id = ?
     `).run(
+      datos.empresa_id || null,
+      datos.empresa_nombre || null,
       datos.cliente_nombre,
       datos.cliente_rut,
       datos.cliente_telefono || null,

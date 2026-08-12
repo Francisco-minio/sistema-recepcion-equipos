@@ -50,6 +50,15 @@ db.exec(`
     UNIQUE(rut)
   );
 
+  CREATE TABLE IF NOT EXISTS cliente_correos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cliente_id INTEGER NOT NULL,
+    email TEXT NOT NULL,
+    creado_en TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(cliente_id, email),
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+  );
+
   -- Orden de servicio: el registro central de ingreso/entrega de un equipo
   CREATE TABLE IF NOT EXISTS ordenes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -146,6 +155,8 @@ db.exec(`
     orden_id INTEGER,
     estado TEXT NOT NULL DEFAULT 'borrador'
       CHECK(estado IN ('borrador', 'enviado', 'recepcionado', 'cancelado')),
+    empresa_id INTEGER,
+    empresa_nombre TEXT,
     cliente_nombre TEXT,
     cliente_rut TEXT,
     cliente_telefono TEXT,
@@ -162,7 +173,8 @@ db.exec(`
     creado_en TEXT NOT NULL DEFAULT (datetime('now')),
     actualizado_en TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (creado_por_usuario_id) REFERENCES usuarios(id),
-    FOREIGN KEY (orden_id) REFERENCES ordenes(id)
+    FOREIGN KEY (orden_id) REFERENCES ordenes(id),
+    FOREIGN KEY (empresa_id) REFERENCES clientes(id)
   );
 
   CREATE TABLE IF NOT EXISTS configuraciones (
@@ -188,6 +200,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_ordenes_estado ON ordenes(estado);
   CREATE INDEX IF NOT EXISTS idx_ordenes_numero ON ordenes(numero_orden);
   CREATE INDEX IF NOT EXISTS idx_clientes_rut ON clientes(rut);
+  CREATE INDEX IF NOT EXISTS idx_cliente_correos_cliente ON cliente_correos(cliente_id);
+  CREATE INDEX IF NOT EXISTS idx_cliente_correos_email ON cliente_correos(email);
   CREATE INDEX IF NOT EXISTS idx_preingresos_codigo ON preingresos(codigo_servicio);
   CREATE INDEX IF NOT EXISTS idx_preingresos_token ON preingresos(token_acceso);
   CREATE INDEX IF NOT EXISTS idx_notificacion_logs_entidad ON notificacion_logs(entidad_tipo, entidad_id);
@@ -211,6 +225,16 @@ agregarColumnaSiNoExiste('ordenes', 'contacto_orden_direccion', 'TEXT');
 agregarColumnaSiNoExiste('ordenes', 'clave_acceso_entregada', 'INTEGER NOT NULL DEFAULT 0');
 agregarColumnaSiNoExiste('ordenes', 'usuario_entrega_id', 'INTEGER');
 agregarColumnaSiNoExiste('orden_fotos', 'posicion', 'INTEGER NOT NULL DEFAULT 0');
+agregarColumnaSiNoExiste('preingresos', 'empresa_id', 'INTEGER');
+agregarColumnaSiNoExiste('preingresos', 'empresa_nombre', 'TEXT');
+
+db.prepare(`
+  INSERT OR IGNORE INTO cliente_correos (cliente_id, email)
+  SELECT id, lower(trim(email))
+  FROM clientes
+  WHERE email IS NOT NULL
+    AND trim(email) <> ''
+`).run();
 
 db.prepare(`
   UPDATE ordenes

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api, { abrirDocumentoProtegido } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import FirmaPanel from '../components/FirmaPanel';
 import { Tarjeta, Campo, Input, Select, Textarea, Boton, Alerta } from '../components/ui';
 import { enviarWhatsAppCliente } from '../utils/whatsapp';
@@ -26,6 +27,7 @@ const ESTADO_FISICO_DEFAULT = '';
 
 export default function Ingreso() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
   const [paso, setPaso] = useState(1);
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState(null);
@@ -37,11 +39,18 @@ export default function Ingreso() {
   const [tecnicos, setTecnicos] = useState([]);
   const [cargandoTecnicos, setCargandoTecnicos] = useState(true);
   const [empresaSeleccionadaId, setEmpresaSeleccionadaId] = useState(null);
+  const [empresaSeleccionadaCorreo, setEmpresaSeleccionadaCorreo] = useState('');
+  const [correosEmpresa, setCorreosEmpresa] = useState([]);
+  const [nuevoCorreoEmpresa, setNuevoCorreoEmpresa] = useState('');
+  const [guardandoCorreoEmpresa, setGuardandoCorreoEmpresa] = useState(false);
+  const [mensajeCorreoEmpresa, setMensajeCorreoEmpresa] = useState(null);
   const [modoEmpresaManual, setModoEmpresaManual] = useState(false);
   const [tipoClienteIngreso, setTipoClienteIngreso] = useState('particular');
   const [codigoServicio, setCodigoServicio] = useState('');
   const [cargandoPreingreso, setCargandoPreingreso] = useState(false);
   const [preingresoCargado, setPreingresoCargado] = useState(null);
+  const [preingresosPendientes, setPreingresosPendientes] = useState([]);
+  const [cargandoPreingresosPendientes, setCargandoPreingresosPendientes] = useState(true);
 
   const [form, setForm] = useState({
     cliente_nombre: '', cliente_empresa: '', cliente_rut: '', cliente_telefono: '', cliente_email: '', cliente_direccion: '',
@@ -62,7 +71,46 @@ export default function Ingreso() {
     api.get('/usuarios/tecnicos')
       .then(({ data }) => setTecnicos(data || []))
       .finally(() => setCargandoTecnicos(false));
+
+    api.get('/preingresos', { params: { estado: 'enviado', limit: 100 } })
+      .then(({ data }) => setPreingresosPendientes((data || []).filter((item) => !item.orden_id)))
+      .finally(() => setCargandoPreingresosPendientes(false));
   }, []);
+
+  useEffect(() => {
+    if (!preingresoCargado || !empresas.length) return;
+
+    if (preingresoCargado.empresa_id) {
+      const empresa = empresas.find((item) => Number(item.id) === Number(preingresoCargado.empresa_id));
+      if (empresa) {
+        seleccionarEmpresa(empresa, {
+          contactoNombre: preingresoCargado.cliente_nombre || '',
+          telefono: preingresoCargado.cliente_telefono || '',
+          email: preingresoCargado.cliente_email || '',
+          direccion: '',
+          rut: empresa.rut || preingresoCargado.cliente_rut || ''
+        });
+        return;
+      }
+    }
+
+    if (preingresoCargado.empresa_nombre) {
+      setTipoClienteIngreso('empresa');
+      setEmpresaSeleccionadaId(null);
+      setModoEmpresaManual(true);
+      setCorreosEmpresa([]);
+      setEmpresaSeleccionadaCorreo('');
+      setForm((prev) => ({
+        ...prev,
+        cliente_empresa: preingresoCargado.empresa_nombre || '',
+        cliente_nombre: preingresoCargado.cliente_nombre || '',
+        cliente_rut: preingresoCargado.cliente_rut || '',
+        cliente_telefono: preingresoCargado.cliente_telefono || '',
+        cliente_email: preingresoCargado.cliente_email || '',
+        cliente_direccion: ''
+      }));
+    }
+  }, [preingresoCargado, empresas]);
 
   const actualizar = (campo, valor) => setForm((f) => ({ ...f, [campo]: valor }));
 
@@ -112,18 +160,25 @@ export default function Ingreso() {
     });
   };
 
-  const seleccionarEmpresa = (empresa) => {
+  const seleccionarEmpresa = (empresa, overrides = {}) => {
+    const correosDisponibles = (empresa.correos || []).map((item) => item.email).filter(Boolean);
+    const correoInicial = overrides.email || correosDisponibles[0] || '';
+
     setTipoClienteIngreso('empresa');
     setEmpresaSeleccionadaId(empresa.id);
+    setCorreosEmpresa(correosDisponibles);
+    setEmpresaSeleccionadaCorreo(correosDisponibles.includes(correoInicial) ? correoInicial : '');
+    setNuevoCorreoEmpresa('');
+    setMensajeCorreoEmpresa(null);
     setModoEmpresaManual(false);
     setForm((prev) => ({
       ...prev,
       cliente_empresa: empresa.nombre || '',
-      cliente_rut: empresa.rut || '',
-      cliente_nombre: '',
-      cliente_telefono: '',
-      cliente_email: '',
-      cliente_direccion: ''
+      cliente_rut: overrides.rut || empresa.rut || '',
+      cliente_nombre: overrides.contactoNombre ?? '',
+      cliente_telefono: overrides.telefono ?? '',
+      cliente_email: correoInicial,
+      cliente_direccion: overrides.direccion ?? ''
     }));
   };
 
@@ -131,6 +186,10 @@ export default function Ingreso() {
     if (id === '__particular__') {
       setTipoClienteIngreso('particular');
       setEmpresaSeleccionadaId(null);
+      setCorreosEmpresa([]);
+      setEmpresaSeleccionadaCorreo('');
+      setNuevoCorreoEmpresa('');
+      setMensajeCorreoEmpresa(null);
       setModoEmpresaManual(false);
       setForm((prev) => ({
         ...prev,
@@ -146,6 +205,10 @@ export default function Ingreso() {
     if (id === '__manual__') {
       setTipoClienteIngreso('empresa');
       setEmpresaSeleccionadaId(null);
+      setCorreosEmpresa([]);
+      setEmpresaSeleccionadaCorreo('');
+      setNuevoCorreoEmpresa('');
+      setMensajeCorreoEmpresa(null);
       setModoEmpresaManual(true);
       setForm((prev) => ({
         ...prev,
@@ -161,6 +224,37 @@ export default function Ingreso() {
 
     const empresa = empresas.find((item) => String(item.id) === String(id));
     if (empresa) seleccionarEmpresa(empresa);
+  };
+
+  const seleccionarCorreoEmpresa = (valor) => {
+    setEmpresaSeleccionadaCorreo(valor);
+    actualizar('cliente_email', valor || '');
+    setMensajeCorreoEmpresa(null);
+  };
+
+  const guardarCorreoEmpresa = async () => {
+    if (!empresaSeleccionadaId || !nuevoCorreoEmpresa.trim()) return;
+    setGuardandoCorreoEmpresa(true);
+    setMensajeCorreoEmpresa(null);
+    try {
+      const { data } = await api.post(`/clientes/${empresaSeleccionadaId}/correos`, {
+        email: nuevoCorreoEmpresa.trim()
+      });
+      const nuevosCorreos = (data.correos || []).map((item) => item.email).filter(Boolean);
+      setEmpresas((prev) => prev.map((item) => (item.id === data.id ? data : item)));
+      setCorreosEmpresa(nuevosCorreos);
+      setEmpresaSeleccionadaCorreo(nuevoCorreoEmpresa.trim().toLowerCase());
+      actualizar('cliente_email', nuevoCorreoEmpresa.trim().toLowerCase());
+      setNuevoCorreoEmpresa('');
+      setMensajeCorreoEmpresa({ tipo: 'ok', texto: 'Correo agregado a la empresa correctamente.' });
+    } catch (err) {
+      setMensajeCorreoEmpresa({
+        tipo: 'error',
+        texto: err.response?.data?.error || 'No se pudo agregar el correo a la empresa.'
+      });
+    } finally {
+      setGuardandoCorreoEmpresa(false);
+    }
   };
 
   const validarPaso1 = () => {
@@ -220,6 +314,9 @@ export default function Ingreso() {
       setFotosIngreso([]);
       setAdvertenciaFotos(null);
       setOrdenCreada(data);
+      if (preingresoCargado?.id) {
+        setPreingresosPendientes((prev) => prev.filter((item) => item.id !== preingresoCargado.id));
+      }
     } catch (err) {
       setErrorEnvio(err.response?.data?.error || 'No se pudo registrar el ingreso. Intenta nuevamente.');
     } finally {
@@ -244,14 +341,18 @@ export default function Ingreso() {
       setPreingresoCargado(data);
       setTipoClienteIngreso('particular');
       setEmpresaSeleccionadaId(null);
+      setCorreosEmpresa([]);
+      setEmpresaSeleccionadaCorreo('');
+      setNuevoCorreoEmpresa('');
+      setMensajeCorreoEmpresa(null);
       setModoEmpresaManual(false);
       setForm((prev) => ({
         ...prev,
+        cliente_empresa: data.empresa_nombre || '',
         cliente_nombre: data.cliente_nombre || '',
         cliente_rut: data.cliente_rut || '',
         cliente_telefono: data.cliente_telefono || '',
         cliente_email: data.cliente_email || '',
-        cliente_empresa: '',
         cliente_direccion: '',
         tipo_equipo: data.tipo_equipo || prev.tipo_equipo,
         marca: data.marca || '',
@@ -277,18 +378,43 @@ export default function Ingreso() {
 
       <Tarjeta titulo="Codigo de servicio opcional">
         <div className="ingreso-codigo-grid">
-          <Input
+          <Select
             value={codigoServicio}
             onChange={(e) => setCodigoServicio(e.target.value.toUpperCase())}
-            placeholder="Ej: PRE-2026-000001"
-          />
+            disabled={cargandoPreingresosPendientes}
+          >
+            <option value="">
+              {cargandoPreingresosPendientes
+                ? 'Cargando preingresos respondidos...'
+                : (preingresosPendientes.length ? 'Selecciona un preingreso respondido' : 'No hay preingresos pendientes')}
+            </option>
+            {preingresosPendientes.map((item) => (
+              <option key={item.id} value={item.codigo_servicio}>
+                {item.codigo_servicio} · {item.empresa_nombre || item.cliente_nombre || 'Sin nombre'} · {item.marca || 'Sin marca'} {item.modelo || ''}
+              </option>
+            ))}
+          </Select>
           <Boton variante="secundario" onClick={cargarCodigoServicio} disabled={cargandoPreingreso}>
             {cargandoPreingreso ? 'Buscando...' : 'Cargar codigo'}
           </Boton>
         </div>
         <p className="ingreso-nota">
-          Si el cliente completo el formulario publico antes de venir, puedes cargar aqui su codigo para reutilizar los datos basicos.
+          Aqui se precargan los preingresos ya respondidos por el cliente y aun no asociados a un ingreso. Tambien puedes seleccionar uno para reutilizar sus datos basicos.
         </p>
+        {preingresosPendientes.length > 0 && (
+          <div className="ingreso-chips" style={{ marginTop: 10 }}>
+            {preingresosPendientes.slice(0, 8).map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`chip ${codigoServicio === item.codigo_servicio ? 'chip-activo' : ''}`}
+                onClick={() => setCodigoServicio(item.codigo_servicio)}
+              >
+                {item.codigo_servicio} · {item.empresa_nombre || item.cliente_nombre || 'Pendiente'}
+              </button>
+            ))}
+          </div>
+        )}
         {preingresoCargado && (
           <Alerta tipo="ok">
             Codigo {preingresoCargado.codigo_servicio} cargado. Ahora solo completa los datos faltantes de recepcion.
@@ -303,10 +429,19 @@ export default function Ingreso() {
           <SeccionCliente
             form={form}
             actualizar={actualizar}
+            usuario={usuario}
             empresas={empresas}
             cargandoEmpresas={cargandoEmpresas}
             cambiarEmpresaSeleccionada={cambiarEmpresaSeleccionada}
             empresaSeleccionadaId={empresaSeleccionadaId}
+            empresaSeleccionadaCorreo={empresaSeleccionadaCorreo}
+            correosEmpresa={correosEmpresa}
+            nuevoCorreoEmpresa={nuevoCorreoEmpresa}
+            setNuevoCorreoEmpresa={setNuevoCorreoEmpresa}
+            guardarCorreoEmpresa={guardarCorreoEmpresa}
+            guardandoCorreoEmpresa={guardandoCorreoEmpresa}
+            mensajeCorreoEmpresa={mensajeCorreoEmpresa}
+            seleccionarCorreoEmpresa={seleccionarCorreoEmpresa}
             modoEmpresaManual={modoEmpresaManual}
             tipoClienteIngreso={tipoClienteIngreso}
           />
@@ -380,14 +515,25 @@ function PasosIndicador({ paso }) {
 function SeccionCliente({
   form,
   actualizar,
+  usuario,
   empresas,
   cargandoEmpresas,
   cambiarEmpresaSeleccionada,
   empresaSeleccionadaId,
+  empresaSeleccionadaCorreo,
+  correosEmpresa,
+  nuevoCorreoEmpresa,
+  setNuevoCorreoEmpresa,
+  guardarCorreoEmpresa,
+  guardandoCorreoEmpresa,
+  mensajeCorreoEmpresa,
+  seleccionarCorreoEmpresa,
   modoEmpresaManual,
   tipoClienteIngreso
 }) {
   const esEmpresa = tipoClienteIngreso === 'empresa';
+  const puedeCrearCorreosEmpresa = ['admin', 'tecnico'].includes(usuario?.rol);
+  const empresaExistenteSeleccionada = esEmpresa && Boolean(empresaSeleccionadaId) && !modoEmpresaManual;
 
   return (
     <div>
@@ -440,16 +586,53 @@ function SeccionCliente({
         <Campo etiqueta={esEmpresa ? 'Telefono empresa' : 'Telefono'}>
           <Input value={form.cliente_telefono} onChange={(e) => actualizar('cliente_telefono', e.target.value)} placeholder="+56 9 1234 5678" />
         </Campo>
-        <Campo etiqueta={esEmpresa ? 'Correo empresa' : 'Correo'}>
+        {empresaExistenteSeleccionada && (
+          <Campo etiqueta="Correo asociado de empresa" hint="Puedes reutilizar un correo guardado o dejar otro solo para esta orden">
+            <Select value={empresaSeleccionadaCorreo} onChange={(e) => seleccionarCorreoEmpresa(e.target.value)}>
+              <option value="">Usar otro correo en esta orden</option>
+              {correosEmpresa.map((correo) => (
+                <option key={correo} value={correo}>{correo}</option>
+              ))}
+            </Select>
+          </Campo>
+        )}
+        <Campo etiqueta={esEmpresa ? 'Correo contacto orden' : 'Correo'}>
           <Input type="email" value={form.cliente_email} onChange={(e) => actualizar('cliente_email', e.target.value)} placeholder="cliente@correo.cl" />
         </Campo>
       </div>
       <Campo etiqueta={esEmpresa ? 'Direccion empresa' : 'Direccion'}>
         <Input value={form.cliente_direccion} onChange={(e) => actualizar('cliente_direccion', e.target.value)} placeholder="Calle, numero, comuna" />
       </Campo>
+      {empresaExistenteSeleccionada && (
+        <div style={{ display: 'grid', gap: '10px', marginBottom: 12 }}>
+          {puedeCrearCorreosEmpresa && (
+            <div className="ingreso-grid-2">
+              <Campo etiqueta="Agregar correo a la empresa" hint="Disponible para administradores y tecnicos">
+                <Input
+                  type="email"
+                  value={nuevoCorreoEmpresa}
+                  onChange={(e) => setNuevoCorreoEmpresa(e.target.value)}
+                  placeholder="nuevo.contacto@empresa.cl"
+                />
+              </Campo>
+              <Campo etiqueta="Accion">
+                <Boton
+                  tipo="button"
+                  variante="secundario"
+                  onClick={guardarCorreoEmpresa}
+                  disabled={!nuevoCorreoEmpresa.trim() || guardandoCorreoEmpresa}
+                >
+                  {guardandoCorreoEmpresa ? 'Guardando...' : 'Guardar en empresa'}
+                </Boton>
+              </Campo>
+            </div>
+          )}
+          {mensajeCorreoEmpresa && <Alerta tipo={mensajeCorreoEmpresa.tipo}>{mensajeCorreoEmpresa.texto}</Alerta>}
+        </div>
+      )}
       <p className="ingreso-nota">
         {esEmpresa
-          ? 'Si seleccionas una empresa existente, se reutilizara su ficha. Si no existe, elige ingreso manual para crearla en este registro.'
+          ? 'Si seleccionas una empresa existente, se reutilizara su ficha maestra. El contacto de la orden sigue siendo editable para este ingreso.'
           : 'Usa la opcion Particular cuando el ingreso no este asociado a una empresa.'}
       </p>
     </div>

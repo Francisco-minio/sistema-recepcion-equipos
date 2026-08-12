@@ -17,6 +17,7 @@ export default function Clientes() {
   const [mensaje, setMensaje] = useState(null);
   const puedeEditarClientes = ['admin', 'recepcion', 'tecnico'].includes(usuario?.rol);
   const puedeEliminarClientes = usuario?.rol === 'admin';
+  const puedeEditarCorreos = ['admin', 'tecnico'].includes(usuario?.rol);
 
   const seleccionado = clientes.find((c) => c.id === seleccionadoId) || null;
 
@@ -51,9 +52,12 @@ export default function Clientes() {
           <h1 className="clientes-titulo">Modulo de clientes empresa</h1>
           <p className="clientes-sub">Administra empresas, contactos y su historial de ordenes.</p>
         </div>
-        {puedeEditarClientes && (
-          <Boton onClick={() => setMostrarForm((v) => !v)}>{mostrarForm ? 'Cancelar' : '+ Nueva empresa'}</Boton>
-        )}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {puedeEditarClientes && <ImportadorEmpresas onImportado={() => { cargar(); mostrarMensaje('Importacion procesada correctamente.'); }} />}
+          {puedeEditarClientes && (
+            <Boton onClick={() => setMostrarForm((v) => !v)}>{mostrarForm ? 'Cancelar' : '+ Nueva empresa'}</Boton>
+          )}
+        </div>
       </div>
 
       {mensaje && <Alerta tipo={mensaje.tipo}>{mensaje.texto}</Alerta>}
@@ -65,6 +69,7 @@ export default function Clientes() {
 
       {mostrarForm && puedeEditarClientes && (
         <FormularioEmpresa
+          puedeEditarCorreos={puedeEditarCorreos}
           onGuardado={(empresa, modo) => {
             setMostrarForm(false);
             setSeleccionadoId(empresa.id);
@@ -115,6 +120,7 @@ export default function Clientes() {
                 cargar();
                 mostrarMensaje('Empresa actualizada correctamente.');
               }}
+              puedeEditarCorreos={puedeEditarCorreos}
             />
           ) : (
             <Tarjeta>
@@ -127,7 +133,7 @@ export default function Clientes() {
   );
 }
 
-function FichaCliente({ cliente, onActualizado, puedeEditarClientes, puedeEliminarClientes }) {
+function FichaCliente({ cliente, onActualizado, puedeEditarClientes, puedeEliminarClientes, puedeEditarCorreos }) {
   const [ordenes, setOrdenes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [editando, setEditando] = useState(false);
@@ -181,6 +187,7 @@ function FichaCliente({ cliente, onActualizado, puedeEditarClientes, puedeElimin
         {editando && puedeEditarClientes && (
           <FormularioEmpresa
             empresa={cliente}
+            puedeEditarCorreos={puedeEditarCorreos}
             onGuardado={(empresa) => {
               setEditando(false);
               onActualizado(empresa);
@@ -195,7 +202,7 @@ function FichaCliente({ cliente, onActualizado, puedeEditarClientes, puedeElimin
           <FilaDato etiqueta="Contacto principal" valor={cliente.contacto_nombre} />
           <FilaDato etiqueta="Cargo del contacto" valor={cliente.contacto_cargo} />
           <FilaDato etiqueta="Telefono" valor={cliente.telefono} />
-          <FilaDato etiqueta="Email" valor={cliente.email} />
+          <FilaDato etiqueta="Correos asociados" valor={renderCorreos(cliente.correos)} />
           <FilaDato etiqueta="Direccion" valor={cliente.direccion} />
           <FilaDato etiqueta="Notas" valor={cliente.notas} />
           <FilaDato etiqueta="Cliente desde" valor={new Date(cliente.creado_en).toLocaleDateString('es-CL')} />
@@ -225,7 +232,7 @@ function FichaCliente({ cliente, onActualizado, puedeEditarClientes, puedeElimin
   );
 }
 
-function FormularioEmpresa({ empresa, onGuardado }) {
+function FormularioEmpresa({ empresa, onGuardado, puedeEditarCorreos }) {
   const [form, setForm] = useState(() => ({
     nombre: empresa?.nombre || '',
     rut: empresa?.rut || '',
@@ -235,14 +242,30 @@ function FormularioEmpresa({ empresa, onGuardado }) {
     contacto_nombre: empresa?.contacto_nombre || '',
     contacto_cargo: empresa?.contacto_cargo || '',
     telefono: empresa?.telefono || '',
-    email: empresa?.email || '',
     direccion: empresa?.direccion || '',
-    notas: empresa?.notas || ''
+    notas: empresa?.notas || '',
+    correos: (empresa?.correos || []).map((item) => item.email).filter(Boolean)
   }));
+  const [correoNuevo, setCorreoNuevo] = useState('');
   const [error, setError] = useState(null);
   const [enviando, setEnviando] = useState(false);
 
   const actualizar = (campo, valor) => setForm((prev) => ({ ...prev, [campo]: valor }));
+
+  const agregarCorreo = () => {
+    const valor = correoNuevo.trim().toLowerCase();
+    if (!valor) return;
+    if (form.correos.includes(valor)) {
+      setCorreoNuevo('');
+      return;
+    }
+    setForm((prev) => ({ ...prev, correos: [...prev.correos, valor] }));
+    setCorreoNuevo('');
+  };
+
+  const quitarCorreo = (correo) => {
+    setForm((prev) => ({ ...prev, correos: prev.correos.filter((item) => item !== correo) }));
+  };
 
   const guardar = async (e) => {
     e.preventDefault();
@@ -250,8 +273,14 @@ function FormularioEmpresa({ empresa, onGuardado }) {
     setError(null);
     try {
       const { data } = empresa
-        ? await api.put(`/clientes/${empresa.id}`, form)
-        : await api.post('/clientes', form);
+        ? await api.put(`/clientes/${empresa.id}`, {
+          ...form,
+          correos: puedeEditarCorreos ? form.correos : undefined
+        })
+        : await api.post('/clientes', {
+          ...form,
+          correos: puedeEditarCorreos ? form.correos : undefined
+        });
       onGuardado(data, empresa ? 'editar' : 'crear');
     } catch (err) {
       setError(err.response?.data?.error || 'No se pudo guardar la empresa.');
@@ -286,10 +315,42 @@ function FormularioEmpresa({ empresa, onGuardado }) {
           <Campo etiqueta="Telefono">
             <Input value={form.telefono} onChange={(e) => actualizar('telefono', e.target.value)} />
           </Campo>
-          <Campo etiqueta="Email">
-            <Input type="email" value={form.email} onChange={(e) => actualizar('email', e.target.value)} />
-          </Campo>
         </div>
+        <Campo etiqueta="Correos asociados" hint={puedeEditarCorreos ? 'Puedes registrar varios correos para usar luego en las ordenes.' : 'Solo administradores y tecnicos pueden modificar esta lista.'}>
+          <div style={{ display: 'grid', gap: '10px' }}>
+            {form.correos.length > 0 ? (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {form.correos.map((correo) => (
+                  <span key={correo} className="badge-accion">
+                    {correo}
+                    {puedeEditarCorreos && (
+                      <button type="button" className="link-accion" onClick={() => quitarCorreo(correo)}>Quitar</button>
+                    )}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="ingreso-nota">No hay correos asociados todavia.</p>
+            )}
+            {puedeEditarCorreos && (
+              <div className="empresa-form-grid">
+                <Campo etiqueta="Nuevo correo">
+                  <Input
+                    type="email"
+                    value={correoNuevo}
+                    onChange={(e) => setCorreoNuevo(e.target.value)}
+                    placeholder="contacto@empresa.cl"
+                  />
+                </Campo>
+                <Campo etiqueta="Accion">
+                  <Boton tipo="button" variante="secundario" onClick={agregarCorreo} disabled={!correoNuevo.trim()}>
+                    Agregar correo
+                  </Boton>
+                </Campo>
+              </div>
+            )}
+          </div>
+        </Campo>
         <Campo etiqueta="Direccion">
           <Input value={form.direccion} onChange={(e) => actualizar('direccion', e.target.value)} />
         </Campo>
@@ -300,6 +361,11 @@ function FormularioEmpresa({ empresa, onGuardado }) {
       </form>
     </Tarjeta>
   );
+}
+
+function renderCorreos(correos = []) {
+  const lista = (correos || []).map((item) => item.email).filter(Boolean);
+  return lista.length ? lista.join(', ') : null;
 }
 
 function FilaDato({ etiqueta, valor, mono }) {
@@ -317,5 +383,70 @@ function ResumenEmpresa({ etiqueta, valor }) {
       <strong>{valor}</strong>
       <span>{etiqueta}</span>
     </div>
+  );
+}
+
+function ImportadorEmpresas({ onImportado }) {
+  const [archivo, setArchivo] = useState(null);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState(null);
+  const [resultado, setResultado] = useState(null);
+
+  const descargarPlantilla = () => {
+    const contenido = [
+      'nombre,rut,razon_social,giro,contacto_nombre,contacto_cargo,telefono,email,direccion,notas',
+      'Backupcode SPA,76123456-7,Backupcode SpA,Servicios TI,Maria Gonzalez,Jefa de TI,+56 9 1234 5678,soporte@empresa.cl,"Icalma 1030, Puerto Montt",Cliente prioritario'
+    ].join('\n');
+    const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'plantilla-clientes.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importar = async () => {
+    if (!archivo) return;
+    setEnviando(true);
+    setError(null);
+    setResultado(null);
+    try {
+      const formData = new FormData();
+      formData.append('archivo', archivo, archivo.name);
+      const { data } = await api.post('/clientes/importar', formData);
+      setResultado(data);
+      setArchivo(null);
+      onImportado?.();
+    } catch (err) {
+      setError(err.response?.data?.error || 'No se pudo importar el archivo.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <Tarjeta titulo="Importacion masiva">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <p className="ingreso-nota">
+          Sube un CSV con columnas como `nombre`, `rut`, `razon_social`, `giro`, `contacto_nombre`, `contacto_cargo`, `telefono`, `email`, `direccion`, `notas`.
+          Si el RUT ya existe, la empresa se actualiza.
+        </p>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <Boton variante="secundario" onClick={descargarPlantilla}>Descargar plantilla CSV</Boton>
+          <Input type="file" accept=".csv,text/csv,.txt" onChange={(e) => setArchivo(e.target.files?.[0] || null)} />
+          <Boton onClick={importar} disabled={!archivo || enviando}>
+            {enviando ? 'Importando...' : 'Importar archivo'}
+          </Boton>
+        </div>
+        {error && <Alerta tipo="error">{error}</Alerta>}
+        {resultado && (
+          <Alerta tipo={resultado.errores?.length ? 'warn' : 'ok'}>
+            {resultado.resumen?.creados || 0} creados, {resultado.resumen?.actualizados || 0} actualizados, {resultado.resumen?.omitidos || 0} omitidos.
+            {resultado.errores?.length ? ` Errores: ${resultado.errores.join(' | ')}` : ''}
+          </Alerta>
+        )}
+      </div>
+    </Tarjeta>
   );
 }
