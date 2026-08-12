@@ -4,7 +4,7 @@ const Preingreso = require('../models/Preingreso');
 const Usuario = require('../models/Usuario');
 const { notificarIngresoCreado, notificarOrdenListaEntrega, reenviarCorreoOrden } = require('../services/preingresoNotifications');
 const { generarComprobanteIngreso, generarComprobanteEntrega } = require('../utils/pdfGenerator');
-const { cifrarTexto } = require('../utils/secretField');
+const { cifrarTexto, descifrarTexto } = require('../utils/secretField');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
@@ -67,6 +67,59 @@ function comentarioTipoFoto(tipo) {
     entrega: 'Entrega'
   };
   return etiquetas[tipo] || tipo || 'Ingreso';
+}
+
+const CAMPOS_EDITABLES_INGRESO = {
+  empresa_orden_nombre: 'Empresa / cliente',
+  empresa_orden_rut: 'RUT empresa / cliente',
+  contacto_orden_nombre: 'Contacto de la orden',
+  contacto_orden_telefono: 'Telefono de contacto',
+  contacto_orden_email: 'Correo de contacto',
+  contacto_orden_direccion: 'Direccion de contacto',
+  tipo_equipo: 'Tipo de equipo',
+  marca: 'Marca',
+  modelo: 'Modelo',
+  numero_serie: 'Numero de serie',
+  color: 'Color',
+  falla_reportada: 'Falla reportada',
+  estado_fisico: 'Estado fisico al ingreso',
+  observaciones_ingreso: 'Observaciones de ingreso',
+  accesorios: 'Accesorios',
+  clave_acceso: 'Clave de acceso'
+};
+
+function normalizarTextoOpcional(valor) {
+  if (valor === undefined) return undefined;
+  if (valor === null) return null;
+  const texto = String(valor).trim();
+  return texto ? texto : null;
+}
+
+function valorComparable(campo, valor) {
+  if (campo === 'accesorios') {
+    return Array.isArray(valor) ? valor : [];
+  }
+  if (campo === 'clave_acceso') {
+    return normalizarTextoOpcional(valor);
+  }
+  return valor ?? null;
+}
+
+function valoresIguales(campo, anterior, nuevo) {
+  if (campo === 'accesorios') {
+    return JSON.stringify(anterior || []) === JSON.stringify(nuevo || []);
+  }
+  return (anterior ?? null) === (nuevo ?? null);
+}
+
+function formatearValorHistorial(campo, valor) {
+  if (campo === 'accesorios') {
+    return Array.isArray(valor) && valor.length ? valor.join(', ') : 'Sin accesorios';
+  }
+  if (campo === 'clave_acceso') {
+    return valor ? 'Registrada' : 'No proporcionada';
+  }
+  return valor || 'Vacio';
 }
 
 const ordenesController = {
@@ -244,6 +297,80 @@ const ordenesController = {
         numero_orden: orden.numero_orden
       }
     });
+  },
+
+  actualizarIngreso(req, res) {
+    const orden = Orden.buscarPorId(req.params.id);
+    if (!orden) return res.status(404).json({ error: 'Orden no encontrada.' });
+
+    const body = req.body || {};
+    if (!body.empresa_orden_nombre || !String(body.empresa_orden_nombre).trim()) {
+      return res.status(400).json({ error: 'La empresa o cliente es obligatoria.' });
+    }
+    if (!body.empresa_orden_rut || !String(body.empresa_orden_rut).trim()) {
+      return res.status(400).json({ error: 'El RUT es obligatorio.' });
+    }
+    if (!body.tipo_equipo) {
+      return res.status(400).json({ error: 'El tipo de equipo es obligatorio.' });
+    }
+    if (!body.falla_reportada || !String(body.falla_reportada).trim()) {
+      return res.status(400).json({ error: 'La falla reportada es obligatoria.' });
+    }
+
+    const cambiosDetectados = [];
+    const cambios = {
+      empresa_orden_nombre: normalizarTextoOpcional(body.empresa_orden_nombre),
+      empresa_orden_rut: normalizarTextoOpcional(body.empresa_orden_rut),
+      contacto_orden_nombre: normalizarTextoOpcional(body.contacto_orden_nombre),
+      contacto_orden_telefono: normalizarTextoOpcional(body.contacto_orden_telefono),
+      contacto_orden_email: normalizarTextoOpcional(body.contacto_orden_email),
+      contacto_orden_direccion: normalizarTextoOpcional(body.contacto_orden_direccion),
+      tipo_equipo: body.tipo_equipo,
+      marca: normalizarTextoOpcional(body.marca),
+      modelo: normalizarTextoOpcional(body.modelo),
+      numero_serie: normalizarTextoOpcional(body.numero_serie),
+      color: normalizarTextoOpcional(body.color),
+      falla_reportada: normalizarTextoOpcional(body.falla_reportada),
+      estado_fisico: normalizarTextoOpcional(body.estado_fisico),
+      observaciones_ingreso: normalizarTextoOpcional(body.observaciones_ingreso),
+      accesorios: Array.isArray(body.accesorios) ? body.accesorios.filter(Boolean) : []
+    };
+
+    Object.keys(cambios).forEach((campo) => {
+      const anterior = valorComparable(campo, orden[campo]);
+      const nuevo = valorComparable(campo, cambios[campo]);
+      if (!valoresIguales(campo, anterior, nuevo)) {
+        cambiosDetectados.push({ campo, anterior, nuevo });
+      }
+    });
+
+    if (Object.prototype.hasOwnProperty.call(body, 'clave_acceso')) {
+      const claveNueva = normalizarTextoOpcional(body.clave_acceso);
+      const claveAnterior = valorComparable('clave_acceso', descifrarTexto(orden.clave_acceso));
+      if (!valoresIguales('clave_acceso', claveAnterior, claveNueva)) {
+        cambios.clave_acceso = claveNueva ? cifrarTexto(claveNueva) : null;
+        cambios.clave_acceso_entregada = claveNueva ? 1 : 0;
+        cambiosDetectados.push({ campo: 'clave_acceso', anterior: claveAnterior, nuevo: claveNueva });
+      }
+    }
+
+    if (!cambiosDetectados.length) {
+      return res.json(orden);
+    }
+
+    const actualizada = Orden.actualizarIngreso(req.params.id, cambios);
+
+    cambiosDetectados.forEach(({ campo, anterior, nuevo }) => {
+      Orden.registrarHistorial(
+        req.params.id,
+        req.usuario.id,
+        orden.estado,
+        orden.estado,
+        `${CAMPOS_EDITABLES_INGRESO[campo]} actualizado: "${formatearValorHistorial(campo, anterior)}" -> "${formatearValorHistorial(campo, nuevo)}"`
+      );
+    });
+
+    res.json(actualizada);
   },
 
   async actualizarEstado(req, res, next) {

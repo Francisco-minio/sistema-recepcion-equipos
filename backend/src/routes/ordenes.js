@@ -14,6 +14,7 @@ router.post('/', requiereRol('admin', 'recepcion', 'tecnico'), upload.array('fot
 router.get('/:id', ordenesController.obtener);
 router.delete('/:id', requiereRol('admin'), ordenesController.eliminar);
 router.post('/:id/reenviar-correo', requiereRol('admin', 'recepcion', 'tecnico'), ordenesController.reenviarCorreo);
+router.patch('/:id/ingreso', requiereRol('admin', 'recepcion', 'tecnico'), ordenesController.actualizarIngreso);
 
 router.patch('/:id/estado', requiereRol('admin', 'recepcion', 'tecnico'), ordenesController.actualizarEstado);
 router.patch('/:id/diagnostico', requiereRol('admin', 'tecnico'), ordenesController.actualizarDiagnostico);

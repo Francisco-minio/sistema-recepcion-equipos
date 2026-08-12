@@ -37,6 +37,13 @@ const SELECT_COMPLETO = `
   LEFT JOIN usuarios ue ON ue.id = o.usuario_entrega_id
 `;
 
+function normalizarTexto(valor) {
+  if (valor === undefined) return undefined;
+  if (valor === null) return null;
+  const texto = String(valor).trim();
+  return texto ? texto : null;
+}
+
 const Orden = {
   generarNumeroOrden,
 
@@ -241,6 +248,51 @@ const Orden = {
         ${sets.join(', ')}
       WHERE id = ?
     `).run(...valores);
+    return this.buscarPorId(id);
+  },
+
+  actualizarIngreso(id, cambios = {}) {
+    const sets = [];
+    const valores = [];
+    const mapping = {
+      empresa_orden_nombre: (valor) => normalizarTexto(valor),
+      empresa_orden_rut: (valor) => normalizarTexto(valor),
+      contacto_orden_nombre: (valor) => normalizarTexto(valor),
+      contacto_orden_telefono: (valor) => normalizarTexto(valor),
+      contacto_orden_email: (valor) => normalizarTexto(valor),
+      contacto_orden_direccion: (valor) => normalizarTexto(valor),
+      tipo_equipo: (valor) => valor,
+      marca: (valor) => normalizarTexto(valor),
+      modelo: (valor) => normalizarTexto(valor),
+      numero_serie: (valor) => normalizarTexto(valor),
+      color: (valor) => normalizarTexto(valor),
+      falla_reportada: (valor) => normalizarTexto(valor),
+      estado_fisico: (valor) => normalizarTexto(valor),
+      observaciones_ingreso: (valor) => normalizarTexto(valor),
+      accesorios: (valor) => JSON.stringify(Array.isArray(valor) ? valor : []),
+      clave_acceso: (valor) => valor ?? null,
+      clave_acceso_entregada: (valor) => (valor ? 1 : 0)
+    };
+
+    Object.entries(mapping).forEach(([campo, transformador]) => {
+      if (!Object.prototype.hasOwnProperty.call(cambios, campo)) return;
+      sets.push(`${campo} = ?`);
+      valores.push(transformador(cambios[campo]));
+    });
+
+    if (!sets.length) {
+      return this.buscarPorId(id);
+    }
+
+    sets.push("actualizado_en = datetime('now')");
+    valores.push(id);
+
+    db.prepare(`
+      UPDATE ordenes SET
+        ${sets.join(', ')}
+      WHERE id = ?
+    `).run(...valores);
+
     return this.buscarPorId(id);
   },
 

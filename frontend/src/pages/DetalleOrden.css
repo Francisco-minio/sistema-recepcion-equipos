@@ -44,6 +44,17 @@
   margin-bottom: 12px;
 }
 
+.detalle-edicion-ingreso {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detalle-edicion-acciones {
+  display: flex;
+  justify-content: flex-start;
+}
+
 .detalle-fotos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

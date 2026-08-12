@@ -117,6 +117,14 @@ export default function DetalleOrden() {
             <FilaInfo etiqueta="Estado fisico al ingreso" valor={orden.estado_fisico} bloque />
           </Tarjeta>
 
+          <EdicionIngresoPanel
+            orden={orden}
+            onActualizado={(o, texto) => {
+              setOrden(o);
+              mostrarMensaje(texto || 'Ingreso actualizado.');
+            }}
+          />
+
           <FotosPanel
             orden={orden}
             puedeSubirFotos={puedeSubirFotos}
@@ -233,6 +241,147 @@ function EstadoPanel({ orden, onActualizado }) {
       </Boton>
     </div>
   );
+}
+
+function EdicionIngresoPanel({ orden, onActualizado }) {
+  const [editando, setEditando] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState(null);
+  const [form, setForm] = useState(() => crearFormularioIngreso(orden));
+
+  useEffect(() => {
+    setForm(crearFormularioIngreso(orden));
+    setError(null);
+  }, [orden]);
+
+  const actualizar = (campo, valor) => {
+    setForm((prev) => ({ ...prev, [campo]: valor }));
+  };
+
+  const guardar = async () => {
+    setEnviando(true);
+    setError(null);
+    try {
+      const { data } = await api.patch(`/ordenes/${orden.id}/ingreso`, {
+        ...form,
+        accesorios: form.accesorios
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean)
+      });
+      onActualizado(data, 'Ingreso actualizado con trazabilidad.');
+      setEditando(false);
+    } catch (err) {
+      setError(err.response?.data?.error || 'No se pudo actualizar el ingreso.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <Tarjeta
+      titulo="Editar ingreso"
+      acciones={(
+        <Boton variante="secundario" onClick={() => {
+          setEditando((prev) => !prev);
+          setForm(crearFormularioIngreso(orden));
+          setError(null);
+        }}
+        >
+          {editando ? 'Cancelar' : 'Editar datos'}
+        </Boton>
+      )}
+    >
+      {!editando ? (
+        <p className="ingreso-nota">Puedes corregir datos del ingreso. Cada cambio quedara registrado en el historial con usuario, valor anterior y valor nuevo.</p>
+      ) : (
+        <div className="detalle-edicion-ingreso">
+          <div className="ingreso-grid-2">
+            <Campo etiqueta="Empresa / cliente" requerido>
+              <Input value={form.empresa_orden_nombre} onChange={(e) => actualizar('empresa_orden_nombre', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="RUT" requerido>
+              <Input value={form.empresa_orden_rut} onChange={(e) => actualizar('empresa_orden_rut', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Contacto de la orden">
+              <Input value={form.contacto_orden_nombre} onChange={(e) => actualizar('contacto_orden_nombre', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Telefono de contacto">
+              <Input value={form.contacto_orden_telefono} onChange={(e) => actualizar('contacto_orden_telefono', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Correo de contacto">
+              <Input type="email" value={form.contacto_orden_email} onChange={(e) => actualizar('contacto_orden_email', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Direccion de contacto">
+              <Input value={form.contacto_orden_direccion} onChange={(e) => actualizar('contacto_orden_direccion', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Tipo de equipo" requerido>
+              <Select value={form.tipo_equipo} onChange={(e) => actualizar('tipo_equipo', e.target.value)}>
+                <option value="computador">Computador</option>
+                <option value="notebook">Notebook</option>
+                <option value="impresora">Impresora</option>
+                <option value="otro">Otro</option>
+              </Select>
+            </Campo>
+            <Campo etiqueta="Marca">
+              <Input value={form.marca} onChange={(e) => actualizar('marca', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Modelo">
+              <Input value={form.modelo} onChange={(e) => actualizar('modelo', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Numero de serie">
+              <Input value={form.numero_serie} onChange={(e) => actualizar('numero_serie', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Color">
+              <Input value={form.color} onChange={(e) => actualizar('color', e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Accesorios">
+              <Input value={form.accesorios} onChange={(e) => actualizar('accesorios', e.target.value)} placeholder="Ej: Cargador, Mouse, Funda" />
+            </Campo>
+          </div>
+          <Campo etiqueta="Falla reportada" requerido>
+            <Textarea value={form.falla_reportada} onChange={(e) => actualizar('falla_reportada', e.target.value)} />
+          </Campo>
+          <Campo etiqueta="Estado fisico al ingreso">
+            <Textarea value={form.estado_fisico} onChange={(e) => actualizar('estado_fisico', e.target.value)} />
+          </Campo>
+          <Campo etiqueta="Observaciones de ingreso">
+            <Textarea value={form.observaciones_ingreso} onChange={(e) => actualizar('observaciones_ingreso', e.target.value)} />
+          </Campo>
+          <Campo etiqueta="Clave de acceso">
+            <Input value={form.clave_acceso} onChange={(e) => actualizar('clave_acceso', e.target.value)} placeholder="Deja vacio para quitarla o escribe una nueva" />
+          </Campo>
+          {error && <Alerta tipo="error">{error}</Alerta>}
+          <div className="detalle-edicion-acciones">
+            <Boton onClick={guardar} disabled={enviando}>
+              {enviando ? 'Guardando...' : 'Guardar cambios'}
+            </Boton>
+          </div>
+        </div>
+      )}
+    </Tarjeta>
+  );
+}
+
+function crearFormularioIngreso(orden) {
+  return {
+    empresa_orden_nombre: orden.cliente_nombre || '',
+    empresa_orden_rut: orden.cliente_rut || '',
+    contacto_orden_nombre: orden.cliente_contacto_nombre || '',
+    contacto_orden_telefono: orden.cliente_telefono || '',
+    contacto_orden_email: orden.cliente_email || '',
+    contacto_orden_direccion: orden.cliente_direccion || '',
+    tipo_equipo: orden.tipo_equipo || 'computador',
+    marca: orden.marca || '',
+    modelo: orden.modelo || '',
+    numero_serie: orden.numero_serie || '',
+    color: orden.color || '',
+    accesorios: Array.isArray(orden.accesorios) ? orden.accesorios.join(', ') : '',
+    falla_reportada: orden.falla_reportada || '',
+    estado_fisico: orden.estado_fisico || '',
+    observaciones_ingreso: orden.observaciones_ingreso || '',
+    clave_acceso: ''
+  };
 }
 
 function DiagnosticoPanel({ orden, tecnicos, onActualizado }) {
