@@ -54,10 +54,10 @@ function guardarFotoBase64({ dataUrl, nombreOriginal }) {
   };
 }
 
-function comentarioAsignacionTecnico(tecnico) {
-  return tecnico
-    ? `Tecnico asignado: ${tecnico.nombre}`
-    : 'Tecnico desasignado';
+function comentarioAsignacionTecnico(anterior, nuevo) {
+  const nombreAnterior = anterior?.nombre || 'Sin asignar';
+  const nombreNuevo = nuevo?.nombre || 'Sin asignar';
+  return `Tecnico asignado actualizado: "${nombreAnterior}" -> "${nombreNuevo}"`;
 }
 
 function comentarioTipoFoto(tipo) {
@@ -196,7 +196,7 @@ const ordenesController = {
       if (tecnico_asignado_id) {
         const tecnico = Usuario.buscarPorId(tecnico_asignado_id);
         if (tecnico) {
-          Orden.registrarHistorial(orden.id, req.usuario.id, orden.estado, orden.estado, comentarioAsignacionTecnico(tecnico));
+          Orden.registrarHistorial(orden.id, req.usuario.id, orden.estado, orden.estado, comentarioAsignacionTecnico(null, tecnico));
         }
       }
 
@@ -419,13 +419,14 @@ const ordenesController = {
     }
     if (Object.prototype.hasOwnProperty.call(req.body, 'tecnico_asignado_id')
       && Number(orden.tecnico_asignado_id || 0) !== Number(tecnico_asignado_id || 0)) {
+      const tecnicoAnterior = orden.tecnico_asignado_id ? Usuario.buscarPorId(orden.tecnico_asignado_id) : null;
       const tecnico = tecnico_asignado_id ? Usuario.buscarPorId(tecnico_asignado_id) : null;
       Orden.registrarHistorial(
         req.params.id,
         req.usuario.id,
         orden.estado,
         orden.estado,
-        comentarioAsignacionTecnico(tecnico)
+        comentarioAsignacionTecnico(tecnicoAnterior, tecnico)
       );
     }
 
