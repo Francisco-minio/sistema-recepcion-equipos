@@ -128,11 +128,24 @@ const Orden = {
     return fila ? this.buscarPorId(fila.id) : null;
   },
 
-  listar({ estado, cliente_id, tecnico_id, busqueda, limit = 50, offset = 0 } = {}) {
+  listar({ estado, estados, cliente_id, tecnico_id, busqueda, limit = 50, offset = 0 } = {}) {
     let condiciones = [];
     let params = {};
 
-    if (estado) {
+    if (estados) {
+      const listaEstados = String(estados)
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      if (listaEstados.length) {
+        const placeholders = listaEstados.map((_, index) => `@estado_${index}`);
+        condiciones.push(`o.estado IN (${placeholders.join(', ')})`);
+        listaEstados.forEach((item, index) => {
+          params[`estado_${index}`] = item;
+        });
+      }
+    } else if (estado) {
       condiciones.push('o.estado = @estado');
       params.estado = estado;
     }
@@ -171,11 +184,24 @@ const Orden = {
     return filas.map(f => ({ ...f, accesorios: f.accesorios ? JSON.parse(f.accesorios) : [] }));
   },
 
-  contar({ estado, cliente_id, tecnico_id, busqueda } = {}) {
+  contar({ estado, estados, cliente_id, tecnico_id, busqueda } = {}) {
     let condiciones = [];
     let params = {};
 
-    if (estado) {
+    if (estados) {
+      const listaEstados = String(estados)
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      if (listaEstados.length) {
+        const placeholders = listaEstados.map((_, index) => `@estado_${index}`);
+        condiciones.push(`o.estado IN (${placeholders.join(', ')})`);
+        listaEstados.forEach((item, index) => {
+          params[`estado_${index}`] = item;
+        });
+      }
+    } else if (estado) {
       condiciones.push('o.estado = @estado');
       params.estado = estado;
     }

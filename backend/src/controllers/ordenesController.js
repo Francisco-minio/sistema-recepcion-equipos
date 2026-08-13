@@ -249,9 +249,13 @@ const ordenesController = {
   },
 
   listar(req, res) {
-    const { estado, cliente_id, tecnico_id, busqueda, limit, offset } = req.query;
+    const { estado, estados, cliente_id, tecnico_id, busqueda, limit, offset } = req.query;
     const params = {
-      estado, cliente_id, tecnico_id, busqueda,
+      estado,
+      estados,
+      cliente_id,
+      tecnico_id,
+      busqueda,
       limit: limit ? parseInt(limit) : 50,
       offset: offset ? parseInt(offset) : 0
     };

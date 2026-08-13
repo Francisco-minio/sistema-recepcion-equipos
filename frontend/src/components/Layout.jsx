@@ -8,6 +8,7 @@ const ENLACES = [
   { to: '/', etiqueta: 'Panel', icono: IconoPanel },
   { to: '/ordenes', etiqueta: 'Ordenes de servicio', icono: IconoOrden },
   { to: '/ingreso', etiqueta: 'Nuevo ingreso', icono: IconoMas },
+  { to: '/entregas', etiqueta: 'Entregas', icono: IconoEntrega },
   { to: '/preingresos', etiqueta: 'Preingresos', icono: IconoPreingreso },
   { to: '/clientes', etiqueta: 'Empresas', icono: IconoCliente }
 ];
@@ -138,6 +139,16 @@ function IconoPreingreso() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M6 4h9l3 3v13a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2z" />
       <path d="M9 10h6M9 14h6M9 18h4" />
+    </svg>
+  );
+}
+function IconoEntrega() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 7h11v8H4z" />
+      <path d="M15 10h2.8l2.2 2.4V15h-5z" />
+      <circle cx="8" cy="17" r="2" />
+      <circle cx="18" cy="17" r="2" />
     </svg>
   );
 }

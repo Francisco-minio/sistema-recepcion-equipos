@@ -4,6 +4,7 @@ import Panel from './pages/Panel';
 import Ordenes from './pages/Ordenes';
 import DetalleOrden from './pages/DetalleOrden';
 import Ingreso from './pages/Ingreso';
+import Entregas from './pages/Entregas';
 import Clientes from './pages/Clientes';
 import Tecnicos from './pages/Tecnicos';
 import Usuarios from './pages/Usuarios';
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/ordenes" element={<RutaProtegida><Ordenes /></RutaProtegida>} />
       <Route path="/ordenes/:id" element={<RutaProtegida><DetalleOrden /></RutaProtegida>} />
       <Route path="/ingreso" element={<RutaProtegida><Ingreso /></RutaProtegida>} />
+      <Route path="/entregas" element={<RutaProtegida rolesPermitidos={['admin', 'recepcion', 'tecnico']}><Entregas /></RutaProtegida>} />
       <Route path="/preingresos" element={<RutaProtegida rolesPermitidos={['admin', 'recepcion', 'tecnico']}><Preingresos /></RutaProtegida>} />
       <Route path="/clientes" element={<RutaProtegida><Clientes /></RutaProtegida>} />
       <Route
